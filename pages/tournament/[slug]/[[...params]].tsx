@@ -7,19 +7,63 @@ import { GraphQLClient, gql } from 'graphql-request'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
+const axios = require('axios').default;
+
+function getBio(username: string): boolean {
+  console.log(`Grabbing bio for @${username}`)
+  const TWT_ENDPOINT = `https://api.twitter.com/2/users/by/username/${username}?user.fields=description`
+  // const TWT_ENDPOINT = "https://slingy-bird-leaderboard.herokuapp.com/full?page=2&rows=3&construct=1"
+  var wasSuccess = false
+
+  axios.get(TWT_ENDPOINT, {
+    headers: {
+      "Authorization": `Bearer ${process.env.NEXT_PUBLIC_TWITTER_API}`,
+      // "Access-Control-Allow-Origin": "*",
+      // "Access-Control-Allow-Credentials": true,
+      // "Access-Control-Allow-Headers": "X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method",
+      "Content-Type": "application/json"
+      // "Content-Type": "application/x-www-form-urlencoded",
+      // "Accept": "application/json",
+    },
+    timeout: 1000,
+    responseType: "json"
+  })
+  .then(function (response: any) {
+    console.log(response)
+    alert(response.toString())
+    wasSuccess = true
+  })
+  .catch(function (error: any) {
+    if (error.response) {
+      // Request made and server responded
+      console.log('request made and server responded')
+      // console.log(error.response)
+      // console.log('data', error.response.data);
+      // console.log('status', error.response.status);
+      // console.log('headers', error.response.headers);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.log("request made but no response received")
+      console.log(error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Error', error.message);
+    }
+    wasSuccess = false
+  })
+  return wasSuccess
+}
 
 function getPronouns(slug: string, tag: string) {
   console.log(`slug/tag::${slug}/${tag}`)
-  const ENDPOINT = "https://api.smash.gg/gql/alpha"
-  const client = new GraphQLClient(ENDPOINT, {
+  const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
+  const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
       authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      // authorization: `Bearer ${process.env.SGG_API}`,
       "Content-Type": "application/json"
     },
   })
   // console.log(process.env.NEXT_PUBLIC_SGG_API)
-  // console.log(process.env.SGG_API)
   var query = gql`
   query GetPronouns($slug: String!, $tag: String!) {
     tournament(slug: $slug) {
@@ -32,6 +76,9 @@ function getPronouns(slug: string, tag: string) {
           gamerTag
           user {
             genderPronoun
+            authorizations(types:TWITTER) {
+              externalUsername
+            }
           }
         }
       }
@@ -46,26 +93,43 @@ function getPronouns(slug: string, tag: string) {
     console.log("gql request sent")
   
     client.request(query, variables).then((data) => {
+
       console.log("gql request received")
       // console.log(data)
       const gamers = data['tournament']['participants']['nodes']
+      const resultTxt = document.getElementById('result')
+      if (resultTxt) {
+        resultTxt.setAttribute('href', '')
+        resultTxt.textContent = ''
+      }
+
       if (gamers.length == 0) alert(`${tag} not found`)
       for (let index = 0; index < gamers.length; index++) {
         const gamer = gamers[index];
-        // console.log(gamer)
+        console.log(gamer)
         if (gamer['user']) {
           const pronouns = gamer['user'].genderPronoun
-          // if (pronouns) console.log(`${gamer['gamerTag']} uses ${pronouns} pronouns`)
-          // else console.log(`${gamer['gamerTag']} has not set their pronouns`)
           if (pronouns) alert(`${gamer['gamerTag']} uses ${pronouns} pronouns`)
-          else alert(`${gamer['gamerTag']} has not yet set their pronouns on SmashGG`)
+          else {
+            const connections = gamer['user']['authorizations']
+            if (connections.length > 0) {
+              const twitter = connections[0].externalUsername
+              if (!getBio(twitter)) {
+                if (resultTxt) {
+                  resultTxt.setAttribute('href', `https://twitter.com/${twitter}`)
+                  resultTxt.textContent = `Pronouns not linked. Try checking their Twitter @${twitter}`
+                }
+              }
+            }
+            else alert(`${gamer['gamerTag']} has not yet set their pronouns on SmashGG or Twitter`)
+          }
         } else {
           alert(`${tag} not found`)
         }
       }
     })
   } else {
-    alert("Both textboxes must be filled")
+    alert("Textbox must be filled")
   }
 
 }
@@ -88,7 +152,7 @@ const Home: NextPage = () => {
   
     const button: HTMLButtonElement = event.currentTarget;
     if (slug) {
-      console.log(slug)
+      // console.log(slug)
       getPronouns(slug.toString(), getTag())
     }
   };
@@ -114,6 +178,10 @@ const Home: NextPage = () => {
         <div className={styles.grid}>
           <input type="text" onChange={handleTagInput} placeholder="Player Tag (ex: Polish)"></input>
           <button onClick={buttonHandler}>Get Pronouns</button>
+        </div>
+
+        <div className={styles.grid}>
+          <a id="result" href=""></a>
         </div>
       </main>
 
