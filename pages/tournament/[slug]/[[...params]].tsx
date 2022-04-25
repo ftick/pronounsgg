@@ -1,10 +1,11 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import styles from '../../../styles/Home.module.css'
 
 import { GraphQLClient, gql } from 'graphql-request'
 import { useState } from 'react'
+import { useRouter } from 'next/router'
 
 
 function getPronouns(slug: string, tag: string) {
@@ -70,13 +71,9 @@ function getPronouns(slug: string, tag: string) {
 }
 
 const Home: NextPage = () => {
-  const [slug, setSlug] = useState(" ");
-  function handleSlugInput(event: any) {
-    setSlug(event.target.value)
-  }
-  function getSlug() {
-    return slug
-  }
+  
+  const router = useRouter()
+  const { slug } = router.query
   
   const [tag, setTag] = useState(" ");
   function handleTagInput(event: any) {
@@ -90,7 +87,10 @@ const Home: NextPage = () => {
     event.preventDefault();
   
     const button: HTMLButtonElement = event.currentTarget;
-    getPronouns(getSlug(), getTag())
+    if (slug) {
+      console.log(slug)
+      getPronouns(slug.toString(), getTag())
+    }
   };
 
     
@@ -108,11 +108,10 @@ const Home: NextPage = () => {
         </h1>
 
         <p className={styles.description}>
-          Enter a tourney slug and a player's tag below
+          Enter a player's tag below
         </p>
 
         <div className={styles.grid}>
-          <input type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
           <input type="text" onChange={handleTagInput} placeholder="Player Tag (ex: Polish)"></input>
           <button onClick={buttonHandler}>Get Pronouns</button>
         </div>
