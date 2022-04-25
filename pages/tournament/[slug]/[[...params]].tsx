@@ -12,7 +12,6 @@ const axios = require('axios').default;
 function getBio(username: string): boolean {
   console.log(`Grabbing bio for @${username}`)
   const TWT_ENDPOINT = `https://api.twitter.com/2/users/by/username/${username}?user.fields=description`
-  // const TWT_ENDPOINT = "https://slingy-bird-leaderboard.herokuapp.com/full?page=2&rows=3&construct=1"
   var wasSuccess = false
 
   axios.get(TWT_ENDPOINT, {

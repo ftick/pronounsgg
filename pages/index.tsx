@@ -11,7 +11,6 @@ const axios = require('axios').default;
 function getBio(username: string): boolean {
   console.log(`Grabbing bio for @${username}`)
   const TWT_ENDPOINT = `https://api.twitter.com/2/users/by/username/${username}?user.fields=description`
-  // const TWT_ENDPOINT = "https://slingy-bird-leaderboard.herokuapp.com/full?page=2&rows=3&construct=1"
   var wasSuccess = false
 
   axios.get(TWT_ENDPOINT, {
@@ -60,12 +59,10 @@ function getPronouns(slug: string, tag: string) {
   const client = new GraphQLClient(ENDPOINT, {
     headers: {
       authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      // authorization: `Bearer ${process.env.SGG_API}`,
       "Content-Type": "application/json"
     },
   })
   // console.log(process.env.NEXT_PUBLIC_SGG_API)
-  // console.log(process.env.SGG_API)
   var query = gql`
   query GetPronouns($slug: String!, $tag: String!) {
     tournament(slug: $slug) {
