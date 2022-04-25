@@ -28,6 +28,7 @@ Note: Make sure to set up environment variables on Vercel too!
 
 ## TODO
 - Dark mode
+- Show tournament name on tourney route page
 - Add page navigation between routes
 - Display Twitter bio instead of Twitter link
 - Autofill support for input fields
