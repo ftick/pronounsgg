@@ -108,7 +108,7 @@ const Home: NextPage = () => {
         </h1>
 
         <p className={styles.description}>
-          Enter a player's tag below
+          Enter a player&apos;s tag below
         </p>
 
         <div className={styles.grid}>
