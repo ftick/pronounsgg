@@ -102,6 +102,7 @@ function getPronouns(slug: string, tag: string) {
       if (resultTxt) {
         resultTxt.setAttribute('href', '')
         resultTxt.textContent = ''
+        resultTxt.hidden = true
       }
 
       if (gamers.length == 0) alert(`${tag} not found`)
@@ -118,7 +119,8 @@ function getPronouns(slug: string, tag: string) {
               getBio(twitter)
               if (resultTxt) {
                 resultTxt.setAttribute('href', `https://twitter.com/${twitter}`)
-                resultTxt.textContent = `Pronouns not linked. Try checking their Twitter @${twitter}`
+                resultTxt.textContent = `Pronouns not linked. Try checking https://twitter.com/${twitter}`
+                resultTxt.hidden = false
               }
             }
             else alert(`${gamer['gamerTag']} has not yet set their pronouns on SmashGG or Twitter`)
@@ -183,7 +185,7 @@ const Home: NextPage = () => {
         </div>
 
         <div className={styles.grid}>
-          <a id="result" href=""></a>
+          <a hidden id="result" href="" className={styles.card}></a>
         </div>
       </main>
 
