@@ -3,135 +3,14 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
-import { GraphQLClient, gql } from 'graphql-request'
 import { useState } from 'react'
+import { getPronouns, getSheet } from '../util/api'
 
-const axios = require('axios').default;
-
-function getBio(username: string): boolean {
-  console.log(`Grabbing bio for @${username}`)
-  const TWT_ENDPOINT = `https://api.twitter.com/2/users/by/username/${username}?user.fields=description`
-  var wasSuccess = false
-
-  axios.get(TWT_ENDPOINT, {
-    headers: {
-      "Authorization": `Bearer ${process.env.NEXT_PUBLIC_TWITTER_API}`,
-      // "Access-Control-Allow-Origin": "*",
-      // "Access-Control-Allow-Credentials": true,
-      // "Access-Control-Allow-Headers": "X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method",
-      "Content-Type": "application/json"
-      // "Content-Type": "application/x-www-form-urlencoded",
-      // "Accept": "application/json",
-    },
-    timeout: 1000,
-    responseType: "json"
-  })
-  .then(function (response: any) {
-    console.log(response)
-    alert(response.toString())
-    wasSuccess = true
-  })
-  .catch(function (error: any) {
-    if (error.response) {
-      // Request made and server responded
-      console.log('request made and server responded')
-      // console.log(error.response)
-      // console.log('data', error.response.data);
-      // console.log('status', error.response.status);
-      // console.log('headers', error.response.headers);
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.log("request made but no response received")
-      console.log(error.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log('Error', error.message);
-    }
-    wasSuccess = false
-  })
-  return wasSuccess
-}
-
-
-function getPronouns(slug: string, tag: string) {
-  console.log(`slug/tag::${slug}/${tag}`)
-  const ENDPOINT = "https://api.smash.gg/gql/alpha"
-  const client = new GraphQLClient(ENDPOINT, {
-    headers: {
-      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      "Content-Type": "application/json"
-    },
-  })
-  // console.log(process.env.NEXT_PUBLIC_SGG_API)
-  var query = gql`
-  query GetPronouns($slug: String!, $tag: String!) {
-    tournament(slug: $slug) {
-      participants(query: {
-        filter: {
-          gamerTag: $tag
-        }
-      }) {
-        nodes {
-          gamerTag
-          user {
-            genderPronoun
-            authorizations(types:TWITTER) {
-              externalUsername
-            }
-          }
-        }
-      }
-    }
-  }`
-  var variables = {
-    slug: slug,
-    tag: tag
+const removeChilds = (parent: HTMLElement | null) => {
+  while (parent?.lastChild) {
+      parent.removeChild(parent.lastChild);
   }
-
-  if (slug.trim() != "" && tag.trim() != "") {
-    console.log("gql request sent")
-  
-    client.request(query, variables).then((data) => {
-      console.log("gql request received")
-      // console.log(data)
-      const gamers = data['tournament']['participants']['nodes']
-      const resultTxt = document.getElementById('result')
-      if (resultTxt) {
-        resultTxt.setAttribute('href', '')
-        resultTxt.textContent = ''
-        resultTxt.hidden = true
-      }
-
-      if (gamers.length == 0) alert(`${tag} not found`)
-      for (let index = 0; index < gamers.length; index++) {
-        const gamer = gamers[index];
-        console.log(gamer)
-        if (gamer['user']) {
-          const pronouns = gamer['user'].genderPronoun
-          if (pronouns) alert(`${gamer['gamerTag']} uses ${pronouns} pronouns`)
-          else {
-            const connections = gamer['user']['authorizations']
-            if (connections.length > 0) {
-              const twitter = connections[0].externalUsername
-              getBio(twitter)
-              if (resultTxt) {
-                resultTxt.setAttribute('href', `https://twitter.com/${twitter}`)
-                resultTxt.textContent = `Pronouns not linked. Try checking https://twitter.com/${twitter}`
-                resultTxt.hidden = false
-              }
-            }
-            else alert(`${gamer['gamerTag']} has not yet set their pronouns on SmashGG or Twitter`)
-          }
-        } else {
-          alert(`${tag} not found`)
-        }
-      }
-    })
-  } else {
-    alert("Both textboxes must be filled")
-  }
-
-}
+};
 
 const Home: NextPage = () => {
   const [slug, setSlug] = useState(" ");
@@ -150,11 +29,99 @@ const Home: NextPage = () => {
     return tag
   }
 
-  const buttonHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
+  var selectedTrEl: any = undefined
+  
+  function select(tag: string) {
+    console.log(tag)
+    var divEl = document.getElementById("resultTable");
+    var trEl = document.getElementById(tag.toLocaleLowerCase())
+    if (selectedTrEl) {
+      selectedTrEl.className = "";
+    }
+    selectedTrEl = trEl;
+    selectedTrEl.className = "selected";
+    var scrollTo = selectedTrEl.offsetTop;
+    if (divEl) divEl.scrollTop = scrollTo;
+  }
+
+  function copyDivToClipboard(ele: HTMLElement) {
+    var range = document.createRange();
+    // var ele = document.getElementById(id)
+    if (ele) {
+      range.selectNode(ele);
+      window.getSelection()?.removeAllRanges(); // clear current selection
+      window.getSelection()?.addRange(range); // to select text
+      document.execCommand("copy");
+      window.getSelection()?.removeAllRanges();// to deselect
+    }
+  }
+
+  const getPronounsHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   
-    const button: HTMLButtonElement = event.currentTarget;
-    getPronouns(getSlug(), getTag())
+    if (slug) {
+      // console.log(slug)
+      const searchTag = getTag()
+      const tagElement = document.getElementById(searchTag.toLocaleLowerCase())
+      if (tagElement) {
+        select(searchTag)
+        tagElement.scrollIntoView({block: "center"});
+        tagElement.className = "selected"
+        const text = tagElement.getElementsByTagName("td")[1].textContent
+        if (text) {
+          if (text.startsWith("@")) alert(`Pronouns not linked. Try checking https://twitter.com/${text.substring(1)}`)
+          else if (text.includes("pronouns")) alert(`${searchTag} uses ${text}`)
+          else alert(`${searchTag} uses ${text} pronouns`)
+        }
+        else alert(`${searchTag} hasn't set their pronouns on SmashGG or linked their Twitter yet`)
+      } else {
+        getPronouns(slug.toString(), searchTag, true) 
+      }
+    }
+  };
+
+  const getSheetHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    const SLUG = getSlug()
+  
+    if (SLUG) {
+      // console.log(SLUG)
+      const slugBox = document.getElementById('slugBox')
+      if (slugBox) slugBox.hidden = true
+      const tagBox = document.getElementById('tagBox')
+      if (tagBox) tagBox.hidden = true
+      const getPronounsBtn = document.getElementById('getPronounsBtn')
+      if (getPronounsBtn) getPronounsBtn.hidden = true
+      const getSheetBtn = document.getElementById('getSheetBtn')
+      if (getSheetBtn) getSheetBtn.hidden = true
+      const copySheetBtn = document.getElementById('copySheetBtn')
+      if (copySheetBtn) copySheetBtn.hidden = true
+      const downloadSheetBtn = document.getElementById('downloadSheetBtn')
+      if (downloadSheetBtn) downloadSheetBtn.hidden = true
+      const resultTable = document.getElementById('resultTable')
+      if (resultTable) {
+        resultTable.hidden = false
+        // const resultDiv2 = document.getElementById('resultDiv2')
+        removeChilds(resultTable)
+      }
+      const result = document.getElementById('result')
+      if (result) result.hidden = true
+      getSheet(SLUG.toString(), 1, true)
+    }
+  };
+
+  const copySheetHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  
+    if (slug) {
+      // console.log(slug)
+      const resultTable = document.getElementById('resultTable')
+      if (resultTable) {
+        copyDivToClipboard(resultTable)
+      }
+      alert("Pronouns Sheet copied to clipboard")
+    }
   };
 
     
@@ -167,22 +134,34 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
+        <h1 id="app-title" className={styles.title}>
           Welcome to the Pronoun Zone!
         </h1>
 
-        <p className={styles.description}>
+        <p id="app-description" className={styles.description}>
           Enter a tourney slug and a player&apos;s tag below
         </p>
 
         <div className={styles.grid}>
-          <input type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
-          <input type="text" onChange={handleTagInput} placeholder="Player Tag (ex: Polish)"></input>
-          <button onClick={buttonHandler}>Get Pronouns</button>
+          <input id="slugBox" type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
+          <button id="getSheetBtn" onClick={getSheetHandler}>Load Pronoun Sheet</button>
+          <button id="copySheetBtn" hidden onClick={copySheetHandler}>Copy</button>
+          {/* <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download</button> */}
+          <button id="downloadSheetBtn" hidden>Download</button>
         </div>
 
         <div className={styles.grid}>
+          <input id="tagBox" type="text" onChange={handleTagInput} placeholder="Player Tag (ex: Polish)"></input>
+          <button id="getPronounsBtn" onClick={getPronounsHandler}>Get Pronouns</button>
+        </div>
+
+        <div id="resultDiv" className={styles.grid}>
           <a hidden id="result" href="" className={styles.card}></a>
+        </div>
+
+        <div id="resultDiv2" className={styles.grid}>
+          {/* <table hidden id="resultTable"></table> */}
+          <table hidden id="resultTable" className={styles.card}></table>
         </div>
       </main>
 
