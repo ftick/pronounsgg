@@ -40,7 +40,6 @@ const Home: NextPage = () => {
 
   function copyDivToClipboard(ele: HTMLElement) {
     var range = document.createRange();
-    // var ele = document.getElementById(id)
     if (ele) {
       range.selectNode(ele);
       window.getSelection()?.removeAllRanges(); // clear current selection
@@ -96,7 +95,6 @@ const Home: NextPage = () => {
       const resultTable = document.getElementById('resultTable')
       if (resultTable) {
         resultTable.hidden = false
-        // const resultDiv2 = document.getElementById('resultDiv2')
         removeChilds(resultTable)
       }
       const result = document.getElementById('result')
@@ -117,6 +115,72 @@ const Home: NextPage = () => {
       alert("Pronouns Sheet copied to clipboard")
     }
   };
+
+  type Player = {
+    tag: string
+    pronouns: string
+    twitter: string
+  }
+
+  type X = {
+    data: any
+    fileName: string
+    fileType: string
+  }
+
+  function downloadFile(x: X) {
+    const blob = new Blob([x.data], { type: x.fileType })
+
+    const a = document.createElement('a')
+    a.download = x.fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  const downloadSheetHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+
+    // Headers for each column
+    let headers = ['Tag,Pronouns,Twitter']
+
+    // grab data from table
+    let data: { players: Player[] } = { players: [] }
+    const rows = document.getElementsByTagName("tr")
+    for (const row in rows) {
+      const x = rows[row]
+      if (typeof x == typeof rows[0]) {
+        var tagTxt = x.cells[0].textContent
+        if (!tagTxt) tagTxt = ""
+        var pronounsTxt = x.cells[1].textContent
+        if (!pronounsTxt) pronounsTxt = ""
+        var twitterTxt = x.cells[2].textContent
+        if (!twitterTxt) twitterTxt = ""
+
+        var player = { tag: tagTxt, pronouns: "", twitter: twitterTxt }
+        if (!pronounsTxt.startsWith("@")) player.pronouns = pronounsTxt
+        data.players.push(player)
+      }
+    }
+
+    // Convert data to a csv
+    let dataCsv = data.players.reduce((acc: string[], player) => {
+      const { tag, pronouns, twitter } = player
+      acc.push([tag, pronouns, twitter].join(','))
+      return acc
+    }, [])
+
+    downloadFile({
+      data: [...headers, ...dataCsv].join('\n'),
+      fileName: `${slug}-pronouns.csv`,
+      fileType: 'text/csv',
+    })
+  }
 
     
   return (
@@ -140,8 +204,7 @@ const Home: NextPage = () => {
           <input id="slugBox" type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
           <button id="getSheetBtn" onClick={getSheetHandler}>Load Pronoun Sheet</button>
           <button id="copySheetBtn" hidden onClick={copySheetHandler}>Copy</button>
-          {/* <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download</button> */}
-          <button id="downloadSheetBtn" hidden>Download</button>
+          <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download</button>
         </div>
 
         <div className={styles.grid}>
@@ -154,7 +217,6 @@ const Home: NextPage = () => {
         </div>
 
         <div id="resultDiv2" className={styles.grid}>
-          {/* <table hidden id="resultTable"></table> */}
           <table hidden id="resultTable" className={styles.card}></table>
         </div>
       </main>
