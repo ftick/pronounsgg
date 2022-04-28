@@ -4,7 +4,7 @@ import styles from '../../../styles/Home.module.css'
 
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { getInfo, getPronouns, getSheetFromEvent, getSheetFromTourney, removeChilds } from '../../../util/util'
+import { getInfo, getPronouns, getSheetFromEvent, getSheetFromTourney, getToken, removeChilds } from '../../../util/util'
 
 const Home: NextPage = () => {
   
@@ -74,7 +74,7 @@ const Home: NextPage = () => {
 
     console.log(params)
   
-    if (slug) {
+    if (slug && getToken()) {
       // console.log(slug)
       const tagBox = document.getElementById('tagBox')
       if (tagBox) tagBox.hidden = true

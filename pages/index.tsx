@@ -4,7 +4,7 @@ import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
 import { useState } from 'react'
-import { getInfo, getPronouns, getSheetFromTourney, removeChilds } from '../util/util'
+import { getInfo, getPronouns, getSheetFromTourney, getToken, removeChilds } from '../util/util'
 
 const Home: NextPage = () => {
   const [slug, setSlug] = useState(" ");
@@ -78,7 +78,7 @@ const Home: NextPage = () => {
 
     const SLUG = getSlug().trim()
   
-    if (SLUG) {
+    if (SLUG && getToken()) {
       console.log(SLUG)
       const slugBox = document.getElementById('slugBox')
       if (slugBox) slugBox.hidden = true

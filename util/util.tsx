@@ -54,23 +54,33 @@ export function getBio(username: string): boolean {
 
 export function getToken(): string {
   var stored = localStorage.getItem("token")
-  if (!stored) {
-    let foo = prompt('Paste your SmashGG API Token (https://developer.smash.gg/docs/authentication) here');
-    confirm(`Confirm: ${foo}`);
-    if (!foo) foo = ""
-    localStorage.setItem("token", foo)
-    return foo
+  if (stored) return stored
+
+  var choice = confirm("SmashGG API Token not detected. Open instructions in a new tab?")
+  if (choice) window.open('https://developer.smash.gg/docs/authentication', '_blank')
+  let foo = prompt('Paste your SmashGG API Token here.\nIt will be stored locally and won\'t be logged by PronounsGG.');
+  // let foo = prompt('Paste your SmashGG API Token (https://developer.smash.gg/docs/authentication) here');
+  if (foo) {
+    if (confirm(`Confirm: ${foo}`)) {
+      localStorage.setItem("token", foo)
+      return foo
+    }
+    return ""
   }
-  return stored
+  return ""
 }
 
 export function getPronouns(slug: string, tag: string, willAlert: boolean) {
   console.log(`slug/tag::${slug}/${tag}`)
+  const TOKEN = getToken()
+  if (TOKEN === "") {
+    return
+  }
   const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
       // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      authorization: `Bearer ${getToken()}`,
+      authorization: `Bearer ${TOKEN}`,
       "Content-Type": "application/json"
     },
   })
@@ -157,11 +167,15 @@ export function getPronouns(slug: string, tag: string, willAlert: boolean) {
 }
 
 export function getInfo(slug: string) {
+  const TOKEN = getToken()
+  if (TOKEN === "") {
+    return
+  }
   const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
       // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      authorization: `Bearer ${getToken()}`,
+      authorization: `Bearer ${TOKEN}`,
       "Content-Type": "application/json"
     },
   })
@@ -188,6 +202,10 @@ export function getInfo(slug: string) {
 }
 
 export function getSheetFromEvent(slug: string, page: number): void {
+  const TOKEN = getToken()
+  if (TOKEN === "") {
+    return
+  }
   const descriptionTxt = document.getElementById('app-description')
   if (descriptionTxt) descriptionTxt.textContent = "Loading"
 
@@ -196,7 +214,7 @@ export function getSheetFromEvent(slug: string, page: number): void {
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
       // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      authorization: `Bearer ${getToken()}`,
+      authorization: `Bearer ${TOKEN}`,
       "Content-Type": "application/json"
     },
   })
@@ -351,9 +369,11 @@ export function getSheetFromEvent(slug: string, page: number): void {
 }
 
 export function getSheetFromTourney(slug: string, page: number, isHome: boolean): void {
+  const TOKEN = getToken()
+  if (TOKEN === "") {
+    return
+  }
 
-  // const titleTxt = document.getElementById('app-title')
-  // if (titleTxt) titleTxt.hidden = false
   const descriptionTxt = document.getElementById('app-description')
   if (descriptionTxt) descriptionTxt.textContent = "Loading"
   
@@ -363,7 +383,7 @@ export function getSheetFromTourney(slug: string, page: number, isHome: boolean)
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
       // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
-      authorization: `Bearer ${getToken()}`,
+      authorization: `Bearer ${TOKEN}`,
       "Content-Type": "application/json"
     },
   })
