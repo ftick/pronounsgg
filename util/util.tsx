@@ -197,7 +197,7 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
       if (page === 1) {
         const titleTxt = document.getElementById('app-title')
         const tourneyName = data['tournament']['name']
-        if (titleTxt && tourneyName) titleTxt.textContent = `Welcome to the ${tourneyName} Pronoun Zone!`
+        if (titleTxt && tourneyName) titleTxt.textContent = `The ${tourneyName} Pronoun Zone`
       }
 
       // console.log(data)

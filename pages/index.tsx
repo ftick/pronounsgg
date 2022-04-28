@@ -193,7 +193,7 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <h1 id="app-title" className={styles.title}>
-          Welcome to the Pronoun Zone!
+          PronounsGG
         </h1>
 
         <p id="app-description" className={styles.description}>
@@ -204,7 +204,7 @@ const Home: NextPage = () => {
           <input id="slugBox" type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
           <button id="getSheetBtn" onClick={getSheetHandler}>Load Pronoun Sheet</button>
           <button id="copySheetBtn" hidden onClick={copySheetHandler}>Copy</button>
-          <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download</button>
+          <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download (CSV)</button>
         </div>
 
         <div className={styles.grid}>
