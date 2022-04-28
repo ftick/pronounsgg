@@ -3,7 +3,7 @@
 }
 
 .main {
-  min-height: 85vh;
+  min-height: 90vh;
   padding: 4rem 0;
   flex: 1;
   display: flex;
@@ -13,6 +13,7 @@
 }
 
 .footer {
+  background-color: rgb(235, 241, 249);
   display: flex;
   border-top: 1px solid #eaeaea;
   flex-direction: row;
@@ -23,7 +24,7 @@
   display: flex;
   flex: 0.5;
   flex-direction: row;
-  padding: 2rem 2rem;
+  padding: 1rem 4rem;
 }
 
 .footer div a {
@@ -33,10 +34,12 @@
 }
 
 .footer div a p {
+  color:#6C6F84;
   font-size: small;
 }
 
 .footer div p {
+  color:#6C6F84;
   font-size: small;
 }
 

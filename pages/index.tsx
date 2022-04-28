@@ -4,7 +4,7 @@ import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
 import { useState } from 'react'
-import { getPronouns, getSheetFromTourney, removeChilds } from '../util/util'
+import { getInfo, getPronouns, getSheetFromTourney, removeChilds } from '../util/util'
 
 const Home: NextPage = () => {
   const [slug, setSlug] = useState(" ");
@@ -76,10 +76,10 @@ const Home: NextPage = () => {
   const getSheetHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    const SLUG = getSlug()
+    const SLUG = getSlug().trim()
   
     if (SLUG) {
-      // console.log(SLUG)
+      console.log(SLUG)
       const slugBox = document.getElementById('slugBox')
       if (slugBox) slugBox.hidden = true
       const tagBox = document.getElementById('tagBox')
@@ -99,6 +99,7 @@ const Home: NextPage = () => {
       }
       const result = document.getElementById('result')
       if (result) result.hidden = true
+      getInfo(SLUG.toString())
       getSheetFromTourney(SLUG.toString(), 1, true)
     }
   };
@@ -181,10 +182,6 @@ const Home: NextPage = () => {
       fileType: 'text/csv',
     })
   }
-
-  const footerRight: React.CSSProperties = {
-    justifyContent: 'end',
-  }
     
   return (
     <div className={styles.container}>
@@ -223,19 +220,6 @@ const Home: NextPage = () => {
           <table hidden id="resultTable" className={styles.card}></table>
         </div>
       </main>
-
-      <footer className={styles.footer}>
-        <div>
-          <p>Built with <svg height={"0.8rem"} viewBox="0 0 1792 1792" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"><path d="M896 1664q-26 0-44-18l-624-602q-10-8-27.5-26T145 952.5 77 855 23.5 734 0 596q0-220 127-344t351-124q62 0 126.5 21.5t120 58T820 276t76 68q36-36 76-68t95.5-68.5 120-58T1314 128q224 0 351 124t127 344q0 221-229 450l-623 600q-18 18-44 18z" fill="#e25555"></path></svg> by </p>
-          <a href="https://twitter.com/Kuyachi_" target="_blank"><p>Kuyachi</p></a>
-        </div>
-        <div style={footerRight}>
-          <p>© 2022 / Released under MIT License / </p>
-          <a href="https://github.com/ftick/pronounsgg" target="_blank">
-            <img height="24" width="24" src="https://unpkg.com/simple-icons@v6/icons/github.svg" />
-          </a>
-        </div>
-      </footer>
     </div>
   )
 }
