@@ -182,7 +182,11 @@ const Home: NextPage = () => {
       fileType: 'text/csv',
     })
   }
-    
+
+  const padding: React.CSSProperties = {
+    margin: '0 0.5rem',
+  }
+  
   return (
     <div className={styles.container}>
       <Head>
@@ -201,15 +205,15 @@ const Home: NextPage = () => {
         </p>
 
         <div className={styles.grid}>
-          <input id="slugBox" type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
-          <button id="getSheetBtn" onClick={getSheetHandler}>Load Pronoun Sheet</button>
-          <button id="copySheetBtn" hidden onClick={copySheetHandler}>Copy</button>
-          <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download (CSV)</button>
+          <input id="slugBox" style={padding} type="text" onChange={handleSlugInput} placeholder="Tourney (ex: genesis-8)"></input>
+          <button id="getSheetBtn" style={padding} onClick={getSheetHandler}>Load Pronoun Sheet</button>
+          <button id="copySheetBtn" style={padding} hidden onClick={copySheetHandler}>Copy</button>
+          <button id="downloadSheetBtn" style={padding} hidden onClick={downloadSheetHandler}>Download (CSV)</button>
         </div>
 
         <div className={styles.grid}>
-          <input id="tagBox" type="text" onChange={handleTagInput} placeholder="Player Tag (ex: Polish)"></input>
-          <button id="getPronounsBtn" onClick={getPronounsHandler}>Get Pronouns</button>
+          <input id="tagBox" type="text" style={padding} onChange={handleTagInput} placeholder="Player Tag (ex: Polish)"></input>
+          <button id="getPronounsBtn" style={padding} onClick={getPronounsHandler}>Get Pronouns</button>
         </div>
 
         <div id="resultDiv" className={styles.grid}>
