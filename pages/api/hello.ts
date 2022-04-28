@@ -17,7 +17,6 @@ function getPronouns(slug: string) {
       "Content-Type": "application/json"
     },
   })
-  // console.log(process.env.NEXT_PUBLIC_SGG_API)
   var query = gql`
   query GetPronouns($slug: String!) {
     tournament(slug: $slug) {
@@ -64,9 +63,6 @@ function getPronouns(slug: string) {
             const twitter = connections[0].externalUsername
             strs.push(`@${twitter}`)
             console.log(`@${twitter}`)
-            // getBio(twitter)
-            // const twt_resp = getBio(twitter)
-            // alert(`Twitter @${twitter}: ${twt_resp}`)
           }
         }
       }
