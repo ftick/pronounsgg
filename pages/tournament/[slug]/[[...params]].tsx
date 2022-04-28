@@ -5,7 +5,7 @@ import styles from '../../../styles/Home.module.css'
 
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { getPronouns, getSheet, removeChilds } from '../../../util/api'
+import { getPronouns, getSheet, removeChilds } from '../../../util/util'
 
 const Home: NextPage = () => {
   
