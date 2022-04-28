@@ -37,7 +37,6 @@ const Home: NextPage = () => {
 
   function copyDivToClipboard(ele: HTMLElement) {
     var range = document.createRange();
-    // var ele = document.getElementById(id)
     if (ele) {
       range.selectNode(ele);
       window.getSelection()?.removeAllRanges(); // clear current selection
@@ -147,7 +146,6 @@ const Home: NextPage = () => {
     for (const row in rows) {
       const x = rows[row]
       if (typeof x == typeof rows[0]) {
-        // console.log(x.cells[0].textContent, x.cells[1].textContent)
         var tagTxt = x.cells[0].textContent
         if (!tagTxt) tagTxt = ""
         var pronounsTxt = x.cells[1].textContent
@@ -197,7 +195,6 @@ const Home: NextPage = () => {
           <button id="getSheetBtn" onClick={getSheetHandler}>Load Pronoun Sheet</button>
           <button id="copySheetBtn" hidden onClick={copySheetHandler}>Copy</button>
           <button id="downloadSheetBtn" hidden onClick={downloadSheetHandler}>Download</button>
-          {/* <button id="downloadSheetBtn" hidden>Download</button> */}
         </div>
 
         <div className={styles.grid}>
@@ -210,7 +207,6 @@ const Home: NextPage = () => {
         </div>
 
         <div id="resultDiv2" className={styles.grid}>
-          {/* <table hidden id="resultTable"></table> */}
           <table hidden id="resultTable" className={styles.card}></table>
         </div>
       </main>
