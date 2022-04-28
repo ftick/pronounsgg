@@ -22,9 +22,9 @@
 
 .footer div {
   display: flex;
-  flex: 0.5;
   flex-direction: row;
-  padding: 1rem 4rem;
+  padding: 1rem 3%;
+  min-width: 155px;
 }
 
 .footer div a {
