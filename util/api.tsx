@@ -1,6 +1,12 @@
 import axios from "axios"
 import { GraphQLClient, gql } from "graphql-request"
 
+export function removeChilds(parent: HTMLElement | null) {
+  while (parent?.lastChild) {
+      parent.removeChild(parent.lastChild);
+  }
+};
+
 export function getBio(username: string): boolean {
   console.log(`Grabbing bio for @${username}`)
   const TWT_ENDPOINT = `https://api.twitter.com/2/users/by/username/${username}?user.fields=description`

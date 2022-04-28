@@ -5,13 +5,7 @@ import styles from '../../../styles/Home.module.css'
 
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { getPronouns, getSheet } from '../../../util/api'
-
-const removeChilds = (parent: HTMLElement | null) => {
-  while (parent?.lastChild) {
-      parent.removeChild(parent.lastChild);
-  }
-};
+import { getPronouns, getSheet, removeChilds } from '../../../util/api'
 
 const Home: NextPage = () => {
   
