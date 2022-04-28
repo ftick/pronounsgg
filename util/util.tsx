@@ -177,7 +177,7 @@ export function getSheetFromEvent(slug: string, page: number): void {
   if (descriptionTxt) descriptionTxt.textContent = "Loading"
 
   const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
-  const PER_PAGE = 250
+  const PER_PAGE = 225
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
       authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
