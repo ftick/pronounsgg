@@ -11,10 +11,12 @@ function MyApp({ Component, pageProps }: AppProps) {
     flex: 0.9,
     minWidth: "120px",
     justifyContent: 'end',
-    fontSize: "xx-small",
   }
   const pLeft: React.CSSProperties = {
     minWidth: "88px"
+  }
+  const pRight: React.CSSProperties = {
+    fontSize: "x-small",
   }
 
   return (
@@ -26,7 +28,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <a href="https://twitter.com/Kuyachi_" target="_blank" rel="noreferrer"><p>Kuyachi</p></a>
         </div>
         <div style={footerRight}>
-          <p>© 2022 / Released under MIT License / </p>
+          <p style={pRight}>© 2022 / Released under MIT License / </p>
           <a href="https://github.com/ftick/pronounsgg" target="_blank" rel="noreferrer">
             <img height="16" width="16" alt="github logo" src="https://unpkg.com/simple-icons@v6/icons/github.svg" />
           </a>
