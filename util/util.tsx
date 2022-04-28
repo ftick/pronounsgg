@@ -56,7 +56,7 @@ export function getToken(): string {
   var stored = localStorage.getItem("token")
   if (stored) return stored
 
-  var choice = confirm("SmashGG API Token not detected. Open instructions in a new tab?")
+  var choice = confirm("SmashGG API Token not detected. Select OK to open instructions in a new tab")
   if (choice) window.open('https://developer.smash.gg/docs/authentication', '_blank')
   let foo = prompt('Paste your SmashGG API Token here.\nIt will be stored locally and won\'t be logged by PronounsGG.');
   // let foo = prompt('Paste your SmashGG API Token (https://developer.smash.gg/docs/authentication) here');
