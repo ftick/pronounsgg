@@ -90,11 +90,11 @@ export function getPronouns(slug: string, tag: string, willAlert: boolean) {
   }
 
   if (slug.trim() != "" && tag.trim() != "") {
-    console.log("gql request sent")
+    console.log("gql sent")
   
     client.request(query, variables).then((data) => {
 
-      console.log("gql request received")
+      console.log("gql received")
       // console.log(data)
       const gamers = data['tournament']['participants']['nodes']
       const resultTxt = document.getElementById('result')
@@ -108,14 +108,15 @@ export function getPronouns(slug: string, tag: string, willAlert: boolean) {
       for (let index = 0; index < gamers.length; index++) {
         const gamer = gamers[index];
         console.log(gamer)
-        if (gamer['user']) {
-          const gamerTag = gamer['gamerTag']
-          const pronouns = gamer['user'].genderPronoun
+        const user = gamer['user']
+        if (user) {
+          const gamerTag = user['player']['gamerTag']
+          const pronouns = user.genderPronoun
           if (pronouns) {
             if (willAlert) alert(`${gamerTag} uses ${pronouns} pronouns`)
           }
           else {
-            const connections = gamer['user']['authorizations']
+            const connections = user['authorizations']
             if (connections.length > 0) {
               const twitter = connections[0].externalUsername
               if (!getBio(twitter)) {
@@ -141,14 +142,7 @@ export function getPronouns(slug: string, tag: string, willAlert: boolean) {
 
 }
 
-export function getSheet(slug: string, page: number, isHome: boolean) {
-
-  // const titleTxt = document.getElementById('app-title')
-  // if (titleTxt) titleTxt.hidden = false
-  const descriptionTxt = document.getElementById('app-description')
-  if (descriptionTxt) descriptionTxt.textContent = "Loading"
-  
-  console.log(`slug::${slug}`)
+export function getInfo(slug: string) {
   const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
@@ -156,53 +150,83 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
       "Content-Type": "application/json"
     },
   })
-  const QUERY = gql`
-  query GetSheet($slug: String!, $page: Int!) {
+  const QUERY_INFO = gql`
+  query GetInfo($slug: String!) {
     tournament(slug: $slug) {
       name
-      numAttendees
-      participants(query: {
-        page: $page,
-        perPage: 300
-      }) {
-        nodes {
-          gamerTag
-          user {
-            player {
-              prefix
-              gamerTag
-            }
-            genderPronoun
-            authorizations(types:TWITTER) {
-              externalUsername
-            }
-          }
-        }
-      }
     }
   }`
   var variables = {
     slug: slug,
-    page: page
+  }
+
+  if (slug.trim() != "") {
+    console.log("gql sent info")
+    client.request(QUERY_INFO, variables).then((data) => {
+      console.log("gql received info")
+
+      const titleTxt = document.getElementById('app-title')
+      const tourneyName = data['tournament']['name']
+      if (titleTxt && tourneyName) titleTxt.textContent = `The ${tourneyName} Pronoun Zone`
+    })
+  }
+}
+
+export function getSheetFromEvent(slug: string, page: number): void {
+  const descriptionTxt = document.getElementById('app-description')
+  if (descriptionTxt) descriptionTxt.textContent = "Loading"
+
+  const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
+  const PER_PAGE = 250
+  const client = new GraphQLClient(SGG_ENDPOINT, {
+    headers: {
+      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      "Content-Type": "application/json"
+    },
+  })
+  const QUERY_EVENT = gql`
+  query GetEvent($event: String!, $page: Int!, $perPage: Int!) {
+    event(slug: $event) {
+    	numEntrants
+    	entrants(query: {
+        page: $page,
+        perPage: $perPage
+      }) {
+      	nodes {
+          participants {
+            gamerTag
+            user {
+              player {
+                gamerTag
+              }
+              genderPronoun
+              authorizations(types:TWITTER) {
+                externalUsername
+              }
+            }
+          }
+        }
+    	}
+    }
+  }`
+  var variables = {
+    event: slug,
+    page: page,
+    perPage: PER_PAGE
   }
   var numAttendees = 0
   var pronounsList: [string, string, string, string][] = [["","","",""]]
   pronounsList.pop()
 
   if (slug.trim() != "") {
-    console.log("gql request sent", page)
+    console.log("gql sent", page)
   
-    client.request(QUERY, variables).then((data) => {
-      console.log("gql request received", page)
-      if (page === 1) {
-        const titleTxt = document.getElementById('app-title')
-        const tourneyName = data['tournament']['name']
-        if (titleTxt && tourneyName) titleTxt.textContent = `The ${tourneyName} Pronoun Zone`
-      }
+    client.request(QUERY_EVENT, variables).then((data) => {
+      console.log("gql received", page)
 
       // console.log(data)
-      numAttendees = data['tournament']['numAttendees']
-      const gamers = data['tournament']['participants']['nodes']
+      numAttendees = data['event']['numEntrants']
+      const gamers = data['event']['entrants']['nodes']
       const resultDiv = document.getElementById('resultDiv')
       const resultDiv2 = document.getElementById('resultDiv2')
       if (resultDiv && page === 0) {
@@ -215,15 +239,13 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
       }
       if (gamers.length == 0) alert(`No players found`)
       pronounsList = gamers.map(function(gamer: any){
-        const user = gamer['user']
+        // console.log(gamer)
+        const user = gamer['participants'][0]['user']
         if (user) {
+          // console.log(user)
           const pronouns = user.genderPronoun
-          // const gamerTag = gamer['gamerTag']
-          // const prefix = user['player']['prefix']
           const gamerTag = user['player']['gamerTag']
-          // const fullTag = (prefix ? `${prefix} ` : "") + gamerTag
-          const fullTag = gamerTag
-          var returnThis = [fullTag]
+          var returnThis = [gamerTag]
 
           if (pronouns) returnThis.push(pronouns)
           else returnThis.push("")
@@ -243,6 +265,9 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
             returnThis.push("")
           }
           return returnThis
+        } else {
+          const backupTag = gamer['participants'][0]['gamerTag']
+          return [backupTag, "", "", ""]
         }
       })
 
@@ -250,7 +275,7 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
         console.log(pronounsList.length)
         for (let i = 0; i < pronounsList.length; i++) {
           if (pronounsList[i]) {
-            console.log((page-1)*300 + i, pronounsList[i][0], pronounsList[i][1])
+            console.log((page-1)*PER_PAGE + i, pronounsList[i][0], pronounsList[i][1])
 
             var entry = document.createElement("tr")
             entry.id = pronounsList[i][0].toLocaleLowerCase()
@@ -279,8 +304,172 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
         }
       }
 
-      if (page*300 < numAttendees) {
-        getSheet(slug, page+1, isHome)
+      if (page*PER_PAGE < numAttendees) {
+        getSheetFromEvent(slug, page+1)
+      } else {
+        const descriptionTxt = document.getElementById('app-description')
+        if (descriptionTxt) {
+          descriptionTxt.textContent = `Enter a player\'s tag below`
+        }
+        const getSheetBtn = document.getElementById('getSheetBtn')
+        if (getSheetBtn) {
+          getSheetBtn.textContent = "Refresh Sheet"
+          getSheetBtn.hidden = false
+        }
+        const slugBox = document.getElementById('slugBox')
+        if (slugBox) slugBox.hidden = false
+        const tagBox = document.getElementById('tagBox')
+        if (tagBox) tagBox.hidden = false
+        const getPronounsBtn = document.getElementById('getPronounsBtn')
+        if (getPronounsBtn) {
+          getPronounsBtn.textContent = "Find Tag"
+          getPronounsBtn.hidden = false
+        }
+        const copySheetBtn = document.getElementById('copySheetBtn')
+        if (copySheetBtn) copySheetBtn.hidden = false
+        const downloadSheetBtn = document.getElementById('downloadSheetBtn')
+        if (downloadSheetBtn) downloadSheetBtn.hidden = false
+      }
+    })
+  }
+}
+
+export function getSheetFromTourney(slug: string, page: number, isHome: boolean): void {
+
+  // const titleTxt = document.getElementById('app-title')
+  // if (titleTxt) titleTxt.hidden = false
+  const descriptionTxt = document.getElementById('app-description')
+  if (descriptionTxt) descriptionTxt.textContent = "Loading"
+  
+  console.log(`slug::${slug}`)
+  const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
+  const PER_PAGE = 300
+  const client = new GraphQLClient(SGG_ENDPOINT, {
+    headers: {
+      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      "Content-Type": "application/json"
+    },
+  })
+  const QUERY = gql`
+  query getSheetFromTourney($slug: String!, $page: Int!, $perPage: Int!) {
+    tournament(slug: $slug) {
+      numAttendees
+      participants(query: {
+        page: $page,
+        perPage: $perPage
+      }) {
+        nodes {
+          gamerTag
+          user {
+            player {
+              gamerTag
+            }
+            genderPronoun
+            authorizations(types:TWITTER) {
+              externalUsername
+            }
+          }
+        }
+      }
+    }
+  }`
+  var variables = {
+    slug: slug,
+    page: page,
+    perPage: PER_PAGE
+  }
+  var numAttendees = 0
+  var pronounsList: [string, string, string, string][] = [["","","",""]]
+  pronounsList.pop()
+
+  if (slug.trim() != "") {
+    console.log("gql sent", page)
+  
+    client.request(QUERY, variables).then((data) => {
+      console.log("gql received", page)
+
+      // console.log(data)
+      numAttendees = data['tournament']['numAttendees']
+      const gamers = data['tournament']['participants']['nodes']
+      const resultDiv = document.getElementById('resultDiv')
+      const resultDiv2 = document.getElementById('resultDiv2')
+      if (resultDiv && page === 0) {
+        const resultTxt = document.getElementById('result')
+        if (resultTxt) {
+          resultTxt.setAttribute('href', '')
+          resultTxt.textContent = ''
+          resultTxt.hidden = true
+        }
+      }
+      if (gamers.length == 0) alert(`No players found`)
+      pronounsList = gamers.map(function(gamer: any){
+        // console.log(gamer)
+        const user = gamer['user']
+        if (user) {
+          // console.log(user)
+          const pronouns = user.genderPronoun
+          const gamerTag = user['player']['gamerTag']
+          var returnThis = [gamerTag]
+
+          if (pronouns) returnThis.push(pronouns)
+          else returnThis.push("")
+          
+          const connections = user['authorizations']
+          if (connections.length > 0) {
+            const twitter = connections[0].externalUsername
+            if (twitter) {
+              returnThis.push(`https://twitter.com/${twitter}`)
+              returnThis.push(`@${twitter}`)
+            } else {
+              returnThis.push("")
+              returnThis.push("")
+            }
+          } else {
+            returnThis.push("")
+            returnThis.push("")
+          }
+          return returnThis
+        } else {
+          const backupTag = gamer['gamerTag']
+          return [backupTag, "", "", ""]
+        }
+      })
+
+      if (resultDiv2) {
+        console.log(pronounsList.length)
+        for (let i = 0; i < pronounsList.length; i++) {
+          if (pronounsList[i]) {
+            console.log((page-1)*PER_PAGE + i, pronounsList[i][0], pronounsList[i][1])
+
+            var entry = document.createElement("tr")
+            entry.id = pronounsList[i][0].toLocaleLowerCase()
+
+            var entry_name = document.createElement("td")
+            entry_name.appendChild(document.createTextNode(pronounsList[i][0]));
+            entry.appendChild(entry_name)
+
+            var entry_pronouns = document.createElement("td")
+            if (!pronounsList[i][1] && pronounsList[i][3]) {
+              var link = document.createElement("a")
+              link.textContent = pronounsList[i][3]
+              link.href = pronounsList[i][2]
+              entry_pronouns.appendChild(link)
+            } else entry_pronouns.appendChild(document.createTextNode(pronounsList[i][1]));
+            entry.appendChild(entry_pronouns)
+
+            var entry_twitter = document.createElement("td")
+            entry_twitter.hidden = true
+            entry_twitter.appendChild(document.createTextNode(pronounsList[i][3]))
+            entry.appendChild(entry_twitter)
+
+            const table = document.getElementById('resultTable')
+            table?.appendChild(entry)
+          }
+        }
+      }
+
+      if (page*PER_PAGE < numAttendees) {
+        getSheetFromTourney(slug, page+1, isHome)
       } else {
         const descriptionTxt = document.getElementById('app-description')
         if (descriptionTxt) {

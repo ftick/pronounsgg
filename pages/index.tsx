@@ -4,7 +4,7 @@ import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 
 import { useState } from 'react'
-import { getPronouns, getSheet, removeChilds } from '../util/util'
+import { getPronouns, getSheetFromTourney, removeChilds } from '../util/util'
 
 const Home: NextPage = () => {
   const [slug, setSlug] = useState(" ");
@@ -99,7 +99,7 @@ const Home: NextPage = () => {
       }
       const result = document.getElementById('result')
       if (result) result.hidden = true
-      getSheet(SLUG.toString(), 1, true)
+      getSheetFromTourney(SLUG.toString(), 1, true)
     }
   };
 

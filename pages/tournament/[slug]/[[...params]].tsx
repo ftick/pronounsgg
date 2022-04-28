@@ -5,12 +5,12 @@ import styles from '../../../styles/Home.module.css'
 
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { getPronouns, getSheet, removeChilds } from '../../../util/util'
+import { getInfo, getPronouns, getSheetFromEvent, getSheetFromTourney, removeChilds } from '../../../util/util'
 
 const Home: NextPage = () => {
   
   const router = useRouter()
-  const { slug } = router.query
+  const { slug, params } = router.query
   
   const [tag, setTag] = useState(" ");
   function handleTagInput(event: any) {
@@ -72,6 +72,8 @@ const Home: NextPage = () => {
 
   const getSheetHandler = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+
+    console.log(params)
   
     if (slug) {
       // console.log(slug)
@@ -90,7 +92,15 @@ const Home: NextPage = () => {
         resultTable.hidden = false
         removeChilds(resultTable)
       }
-      getSheet(slug.toString(), 1, false)
+
+      getInfo(slug.toString())
+      if (params && params.length > 1) {
+        var fullSlug = `tournament/${slug}/${params[0]}/${params[1]}`
+        getSheetFromEvent(fullSlug, 1)
+      }
+      else {
+        getSheetFromTourney(slug.toString(), 1, false)
+      }
     }
   };
 
