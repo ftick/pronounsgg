@@ -186,7 +186,7 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
     page: page
   }
   var numAttendees = 0
-  var pronounsList: [string, string, string][] = [["","",""]]
+  var pronounsList: [string, string, string, string][] = [["","","",""]]
   pronounsList.pop()
 
   if (slug.trim() != "") {
@@ -223,13 +223,26 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
           const gamerTag = user['player']['gamerTag']
           // const fullTag = (prefix ? `${prefix} ` : "") + gamerTag
           const fullTag = gamerTag
-          if (pronouns) return [fullTag, pronouns, ""]
+          var returnThis = [fullTag]
+
+          if (pronouns) returnThis.push(pronouns)
+          else returnThis.push("")
+          
           const connections = user['authorizations']
           if (connections.length > 0) {
             const twitter = connections[0].externalUsername
-            return [fullTag, `@${twitter}`, `https://twitter.com/${twitter}`]
+            if (twitter) {
+              returnThis.push(`https://twitter.com/${twitter}`)
+              returnThis.push(`@${twitter}`)
+            } else {
+              returnThis.push("")
+              returnThis.push("")
+            }
+          } else {
+            returnThis.push("")
+            returnThis.push("")
           }
-          return [fullTag, "", ""]
+          return returnThis
         }
       })
 
@@ -247,13 +260,18 @@ export function getSheet(slug: string, page: number, isHome: boolean) {
             entry.appendChild(entry_name)
 
             var entry_pronouns = document.createElement("td")
-            if (pronounsList[i][1].charAt(0) === '@') {
+            if (!pronounsList[i][1] && pronounsList[i][3]) {
               var link = document.createElement("a")
-              link.textContent = pronounsList[i][1]
+              link.textContent = pronounsList[i][3]
               link.href = pronounsList[i][2]
               entry_pronouns.appendChild(link)
             } else entry_pronouns.appendChild(document.createTextNode(pronounsList[i][1]));
             entry.appendChild(entry_pronouns)
+
+            var entry_twitter = document.createElement("td")
+            entry_twitter.hidden = true
+            entry_twitter.appendChild(document.createTextNode(pronounsList[i][3]))
+            entry.appendChild(entry_twitter)
 
             const table = document.getElementById('resultTable')
             table?.appendChild(entry)
