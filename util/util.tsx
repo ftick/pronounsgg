@@ -7,6 +7,7 @@ export function removeChilds(parent: HTMLElement | null) {
   }
 };
 
+// TODO: Fix Twitter bio grabber
 export function getBio(username: string): boolean {
   console.log(`Grabbing bio for @${username}`)
   const TWT_ENDPOINT = `https://api.twitter.com/2/users/by/username/${username}?user.fields=description`
@@ -51,12 +52,25 @@ export function getBio(username: string): boolean {
   return wasSuccess
 }
 
+export function getToken(): string {
+  var stored = localStorage.getItem("token")
+  if (!stored) {
+    let foo = prompt('Paste your SmashGG API Token (https://developer.smash.gg/docs/authentication) here');
+    confirm(`Confirm: ${foo}`);
+    if (!foo) foo = ""
+    localStorage.setItem("token", foo)
+    return foo
+  }
+  return stored
+}
+
 export function getPronouns(slug: string, tag: string, willAlert: boolean) {
   console.log(`slug/tag::${slug}/${tag}`)
   const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
-      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      authorization: `Bearer ${getToken()}`,
       "Content-Type": "application/json"
     },
   })
@@ -146,7 +160,8 @@ export function getInfo(slug: string) {
   const SGG_ENDPOINT = "https://api.smash.gg/gql/alpha"
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
-      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      authorization: `Bearer ${getToken()}`,
       "Content-Type": "application/json"
     },
   })
@@ -180,7 +195,8 @@ export function getSheetFromEvent(slug: string, page: number): void {
   const PER_PAGE = 225
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
-      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      authorization: `Bearer ${getToken()}`,
       "Content-Type": "application/json"
     },
   })
@@ -346,7 +362,8 @@ export function getSheetFromTourney(slug: string, page: number, isHome: boolean)
   const PER_PAGE = 300
   const client = new GraphQLClient(SGG_ENDPOINT, {
     headers: {
-      authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      // authorization: `Bearer ${process.env.NEXT_PUBLIC_SGG_API}`,
+      authorization: `Bearer ${getToken()}`,
       "Content-Type": "application/json"
     },
   })
